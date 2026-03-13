@@ -289,26 +289,16 @@ export default function Calculator() {
   return (
     <div className="app-container">
       <div className="header">
-        <div className="header-label">Investment Analysis</div>
         <h1 className="header-title">23 Hamel St, St. John&apos;s, NL</h1>
-        <div className="header-sub">5-Bed Conversion &middot; Single Dwelling &middot; 1,716 sqft &middot; Built 1949 &middot; Rabbittown near MUN</div>
-        <div className="header-sub">3 bedrooms upstairs (existing windows) + 2 bedrooms in basement (egress windows needed)</div>
-        <a className="header-link" href="https://www.redfin.ca/nl/st-john-s/23-Hamel-St-A1C-5A3/home/158595475" target="_blank" rel="noopener noreferrer">View Listing on Redfin &rarr;</a>
+        <a className="header-link" href="https://www.redfin.ca/nl/st-john-s/23-Hamel-St-A1C-5A3/home/158595475" target="_blank" rel="noopener noreferrer">Redfin</a>
         <div className="header-sync">
           <span className="sync-dot" style={{ background: syncColors[syncStatus] }} />
           <span>
             {syncLabels[syncStatus]}
             {saving && " \u2014 saving..."}
-            {lastSaved && !saving && ` \u00b7 Last edit ${new Date(lastSaved).toLocaleString()}`}
+            {lastSaved && !saving && ` \u00b7 ${new Date(lastSaved).toLocaleString()}`}
           </span>
         </div>
-      </div>
-
-      <div className="metrics-grid">
-        <MetricCard label="Monthly CF" value={fmt(r.monthlyCF)} color={r.monthlyCF >= 0 ? "var(--green)" : "var(--red)"} sub="After all expenses" />
-        <MetricCard label="Annual CF" value={fmt(r.annualCF)} color={r.annualCF >= 0 ? "var(--green)" : "var(--red)"} sub="12-month total" />
-        <MetricCard label="Cash-on-Cash" value={pct(r.coc)} color={r.coc >= 0.05 ? "var(--green)" : r.coc >= 0 ? "var(--yellow)" : "var(--red)"} sub="Annual CF / Cash In" />
-        <MetricCard label="Total Cash In" value={fmt(r.totalCashIn)} color="var(--accent)" sub="Down + closing + reno" />
       </div>
 
       <div className="two-col">
