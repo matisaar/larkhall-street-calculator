@@ -304,12 +304,6 @@ export default function Calculator() {
         </div>
       </div>
 
-      <div className="photo-gallery">
-        <img src="/photos/photo1.png" alt="23 Hamel St - Front" />
-        <img src="/photos/photo2.png" alt="23 Hamel St - Interior" />
-        <img src="/photos/photo3.png" alt="23 Hamel St - Detail" />
-      </div>
-
       <div className="metrics-grid">
         <MetricCard label="Monthly CF" value={fmt(r.monthlyCF)} color={r.monthlyCF >= 0 ? "var(--green)" : "var(--red)"} sub="After all expenses" />
         <MetricCard label="Annual CF" value={fmt(r.annualCF)} color={r.annualCF >= 0 ? "var(--green)" : "var(--red)"} sub="12-month total" />
