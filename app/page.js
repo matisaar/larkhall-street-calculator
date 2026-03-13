@@ -290,8 +290,9 @@ export default function Calculator() {
     <div className="app-container">
       <div className="header">
         <div className="header-label">Investment Analysis</div>
-        <h1 className="header-title">23 Hamel St, St. John&apos;s</h1>
-        <div className="header-sub">5-bedroom single dwelling &mdash; 3 up / 2 down &mdash; near MUN</div>
+        <h1 className="header-title">23 Hamel St, St. John&apos;s, NL</h1>
+        <div className="header-sub">5-Bed Conversion &middot; Single Dwelling &middot; 1,716 sqft &middot; Built 1949 &middot; Rabbittown near MUN</div>
+        <div className="header-sub">3 bedrooms upstairs (existing windows) + 2 bedrooms in basement (egress windows needed)</div>
         <div className="header-sync">
           <span className="sync-dot" style={{ background: syncColors[syncStatus] }} />
           <span>
@@ -311,57 +312,68 @@ export default function Calculator() {
 
       <div className="two-col">
         <div>
-          <Section title="Purchase">
+          <Section title="Purchase Assumptions">
             <InputRow label="Purchase Price" field="purchasePrice" inputs={inputs} onChange={onChange} step={5000} />
-            <InputRow label="Down Payment" field="downPaymentPct" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={5} />
-            <InputRow label="Closing Costs" field="closingCostPct" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={0.5} />
-            <InputRow label="Mortgage Rate" field="mortgageRate" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={0.1} />
-            <InputRow label="Amortization" field="amortYears" inputs={inputs} onChange={onChange} prefix="" suffix="yr" step={5} />
-            <ResultRow label="Monthly Mortgage" value={fmt(r.monthlyMortgage)} />
+            <InputRow label="Down Payment %" field="downPaymentPct" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={5} />
+            <ResultRow label="Down Payment $" value={fmt(r.downPayment)} />
+            <InputRow label="Closing Costs (est. 3%)" field="closingCostPct" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={0.5} note="Legal, inspection, land transfer" />
+            <InputRow label="Mortgage Rate (5yr fixed)" field="mortgageRate" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={0.1} />
+            <InputRow label="Amortization (years)" field="amortYears" inputs={inputs} onChange={onChange} prefix="" suffix="yr" step={5} />
+            <ResultRow label="Monthly Mortgage Payment (P&I)" value={fmt(r.monthlyMortgage)} />
             <ResultRow label="Mortgage Amount" value={fmt(r.mortgage)} />
           </Section>
 
-          <Section title="Renovation" defaultOpen={false}>
-            <InputRow label="2 Egress Windows" field="egressWindows" inputs={inputs} onChange={onChange} step={500} note="Cut concrete + install for basement BRs" />
-            <InputRow label="Partition Walls" field="partitionWalls" inputs={inputs} onChange={onChange} step={500} note="Close off BR3 from kitchen + living" />
-            <InputRow label="Basement Cosmetic" field="basementCosmetic" inputs={inputs} onChange={onChange} step={500} />
+          <Section title="Renovation Budget" defaultOpen={false}>
+            <InputRow label="2 Egress Windows (cut concrete + install)" field="egressWindows" inputs={inputs} onChange={onChange} step={500} note="~$3K–$5K each, 2 basement bedrooms" />
+            <InputRow label="Partition Walls (close off BR3 from kitchen + living)" field="partitionWalls" inputs={inputs} onChange={onChange} step={500} note="Two walls to enclose bedroom from open-concept area" />
+            <InputRow label="Basement Cosmetic (paint, minor flooring)" field="basementCosmetic" inputs={inputs} onChange={onChange} step={500} note="Rooms already walled off" />
             <InputRow label="Permits" field="permits" inputs={inputs} onChange={onChange} step={100} />
             <InputRow label="Contingency" field="contingencyPct" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={5} />
             <ResultRow label="Total Renovation" value={fmt(r.totalReno)} />
           </Section>
 
-          <Section title="Income">
-            <InputRow label="Number of Rooms" field="numRooms" inputs={inputs} onChange={onChange} prefix="" suffix="rooms" step={1} />
-            <InputRow label="Rent per Room" field="rentPerRoom" inputs={inputs} onChange={onChange} step={25} note="Utilities included in rent" />
-            <InputRow label="Vacancy" field="vacancyPct" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={1} />
-            <ResultRow label="Gross Monthly Rent" value={fmt(r.grossRent)} />
-            <ResultRow label="Effective Income" value={fmt(r.egi)} note="After vacancy" />
+          <Section title="Total Cash Required" defaultOpen={false}>
+            <ResultRow label="Down Payment" value={fmt(r.downPayment)} />
+            <ResultRow label="Closing Costs" value={fmt(r.closingCosts)} />
+            <ResultRow label="Renovation" value={fmt(r.totalReno)} />
+            <ResultRow label="Total Cash In" value={fmt(r.totalCashIn)} />
           </Section>
 
-          <Section title="Expenses">
+          <Section title="Monthly Income">
+            <InputRow label="Number of Rooms" field="numRooms" inputs={inputs} onChange={onChange} prefix="" suffix="rooms" step={1} />
+            <InputRow label="Rent per Room (utilities included)" field="rentPerRoom" inputs={inputs} onChange={onChange} step={25} />
+            <InputRow label="Vacancy Rate" field="vacancyPct" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={1} note="Near MUN – strong tenant demand" />
+            <ResultRow label="Gross Monthly Rent" value={fmt(r.grossRent)} />
+            <ResultRow label="Effective Gross Income (EGI)" value={fmt(r.egi)} />
+          </Section>
+
+          <Section title="Monthly Operating Expenses">
             <ResultRow label="Mortgage (P&I)" value={fmt(r.monthlyMortgage)} />
-            <InputRow label="Property Tax (annual)" field="propertyTaxAnnual" inputs={inputs} onChange={onChange} step={100} note="City tax + water" />
+            <InputRow label="Property Tax (annual)" field="propertyTaxAnnual" inputs={inputs} onChange={onChange} step={100} note="About $247/mo – city tax + water" />
             <InputRow label="Insurance" field="insurance" inputs={inputs} onChange={onChange} step={10} />
-            <InputRow label="Utilities" field="utilities" inputs={inputs} onChange={onChange} step={25} note="Baseboard electric \u2014 you absorb this" />
-            <InputRow label="Maintenance / CapEx" field="maintenance" inputs={inputs} onChange={onChange} step={25} note="1949 build" />
-            <InputRow label="PM Fee" field="pmPct" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={1} note="% of gross rent" />
+            <InputRow label="Utilities (heat/electric) – included in rent" field="utilities" inputs={inputs} onChange={onChange} step={25} note="Baseboard electric; you absorb this" />
+            <InputRow label="Maintenance & CapEx Reserve" field="maintenance" inputs={inputs} onChange={onChange} step={25} note="1949 build – budget conservatively" />
+            <InputRow label="Property Management (10% of gross per room)" field="pmPct" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={1} note="Your existing PM arrangement" />
             <ResultRow label="Total Monthly Expenses" value={fmt(r.totalExpenses)} />
           </Section>
         </div>
 
         <div>
-          <Section title="Key Metrics">
+          <Section title="Cash Flow">
             <ResultRow label="Monthly Cash Flow" value={fmt(r.monthlyCF)} highlight />
             <ResultRow label="Annual Cash Flow" value={fmt(r.annualCF)} highlight />
-            <ResultRow label="Cap Rate" value={pct(r.capRate)} note="NOI / Total Cost" />
-            <ResultRow label="Cash-on-Cash Return" value={pct(r.coc)} note="Annual CF / Cash In" />
-            <ResultRow label="DSCR" value={r.dscr.toFixed(2) + "x"} note="> 1.2x is healthy" />
-            <ResultRow label="Gross Rent Multiplier" value={r.grm.toFixed(1) + "x"} />
-            <ResultRow label="Break-even Occupancy" value={pct(r.breakeven)} note="% occupancy to cover expenses" />
-            <ResultRow label="CF per Door" value={fmt(r.cfPerDoor)} note="Monthly CF / rooms" />
           </Section>
 
-          <Section title="Sensitivity \u2014 Rent per Room">
+          <Section title="Key Metrics">
+            <ResultRow label="Cap Rate" value={pct(r.capRate)} note="NOI / Total Cost (purchase + reno)" />
+            <ResultRow label="Cash-on-Cash Return" value={pct(r.coc)} note="Annual CF / Total Cash In" />
+            <ResultRow label="DSCR (Debt Service Coverage)" value={r.dscr.toFixed(2) + "x"} note="NOI / Debt Service; >1.2x = healthy" />
+            <ResultRow label="Gross Rent Multiplier" value={r.grm.toFixed(1) + "x"} />
+            <ResultRow label="Break-even Occupancy" value={pct(r.breakeven)} note="Expenses / Gross Rent" />
+            <ResultRow label="Monthly CF per Door" value={fmt(r.cfPerDoor)} />
+          </Section>
+
+          <Section title="Sensitivity – What If Rent Per Room Changes?">
             <SensitivityTable inputs={inputs} />
           </Section>
         </div>
