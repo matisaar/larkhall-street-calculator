@@ -8,7 +8,7 @@ const defaultInputs = {
   mortgageRate: 5,
   amortYears: 25,
   egressWindows: 2000,
-  wallsDoors: 3500,
+  wallsDoors: 5500,
   painting: 2000,
   electrical: 1500,
   insulation: 500,
