@@ -8,12 +8,10 @@ const defaultInputs = {
   mortgageRate: 5,
   amortYears: 25,
   egressWindows: 2000,
-  wallsDoors: 5500,
+  wallsDoors: 7500,
   painting: 2000,
-  electrical: 1500,
   insulation: 500,
-  commonArea: 3000,
-  permits: 500,
+  basementKitchen: 3000,
   contingencyPct: 0,
   numRooms: 6,
   rentPerRoom: 650,
@@ -51,7 +49,7 @@ function calc(i) {
   const mortgage = i.purchasePrice - downPayment;
   const closingCosts = i.purchasePrice * (i.closingCostPct / 100);
   const renoSubtotal =
-    i.egressWindows + i.wallsDoors + i.painting + i.electrical + i.insulation + i.commonArea + i.permits;
+    i.egressWindows + i.wallsDoors + i.painting + i.insulation + i.basementKitchen;
   const contingency = renoSubtotal * (i.contingencyPct / 100);
   const totalReno = renoSubtotal + contingency;
   const totalCashIn = downPayment + closingCosts + totalReno;
@@ -321,10 +319,8 @@ export default function Calculator() {
             <InputRow label="Egress Window (1)" field="egressWindows" inputs={inputs} onChange={onChange} step={500} note="Cut concrete + install for 1 basement BR" />
             <InputRow label="Walls & Doors" field="wallsDoors" inputs={inputs} onChange={onChange} step={500} note="Partition walls (up & down), add doors, fix doors" />
             <InputRow label="Painting (all floors)" field="painting" inputs={inputs} onChange={onChange} step={250} note="BRs, bathroom, stairways, entire basement" />
-            <InputRow label="Electrical & Mechanical" field="electrical" inputs={inputs} onChange={onChange} step={250} note="Move switches to hallway, bath fan, relocate heater" />
             <InputRow label="Insulation" field="insulation" inputs={inputs} onChange={onChange} step={250} note="Basement wall insulation" />
-            <InputRow label="Common Area Setup" field="commonArea" inputs={inputs} onChange={onChange} step={250} note="Fridge, table, chairs, microwave, hot plates (bar area)" />
-            <InputRow label="Permits" field="permits" inputs={inputs} onChange={onChange} step={100} />
+            <InputRow label="Basement Kitchen" field="basementKitchen" inputs={inputs} onChange={onChange} step={250} note="Fridge, table, chairs, microwave, hot plates" />
             <InputRow label="Contingency" field="contingencyPct" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={5} note="Contractor quoted ~$15K" />
             <ResultRow label="Total Renovation" value={fmt(r.totalReno)} />
           </Section>
