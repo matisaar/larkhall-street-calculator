@@ -7,7 +7,7 @@ const defaultInputs = {
   closingCostPct: 3,
   mortgageRate: 5,
   amortYears: 25,
-  egressWindows: 4000,
+  egressWindows: 2000,
   wallsDoors: 3500,
   painting: 2000,
   electrical: 1500,
@@ -318,7 +318,7 @@ export default function Calculator() {
           </Section>
 
           <Section title="Renovation Budget" defaultOpen={false}>
-            <InputRow label="Egress Windows (2)" field="egressWindows" inputs={inputs} onChange={onChange} step={500} note="Cut concrete + install for 2 basement BRs" />
+            <InputRow label="Egress Window (1)" field="egressWindows" inputs={inputs} onChange={onChange} step={500} note="Cut concrete + install for 1 basement BR" />
             <InputRow label="Walls & Doors" field="wallsDoors" inputs={inputs} onChange={onChange} step={500} note="Partition walls (up & down), add doors, fix doors" />
             <InputRow label="Painting (all floors)" field="painting" inputs={inputs} onChange={onChange} step={250} note="BRs, bathroom, stairways, entire basement" />
             <InputRow label="Electrical & Mechanical" field="electrical" inputs={inputs} onChange={onChange} step={250} note="Move switches to hallway, bath fan, relocate heater" />
