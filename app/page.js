@@ -143,40 +143,96 @@ function Section({ title, children, defaultOpen = true }) {
   );
 }
 
-function SensitivityTable({ inputs, field, values, label }) {
+function ScenarioAnalysis({ inputs }) {
+  const [overrides, setOverrides] = useState({
+    rentPerRoom: inputs.rentPerRoom,
+    vacancyPct: inputs.vacancyPct,
+    mortgageRate: inputs.mortgageRate,
+    numRooms: inputs.numRooms,
+    purchasePrice: inputs.purchasePrice,
+  });
+
+  useEffect(() => {
+    setOverrides((prev) => ({
+      rentPerRoom: prev.rentPerRoom === inputs.rentPerRoom ? prev.rentPerRoom : inputs.rentPerRoom,
+      vacancyPct: prev.vacancyPct === inputs.vacancyPct ? prev.vacancyPct : inputs.vacancyPct,
+      mortgageRate: prev.mortgageRate === inputs.mortgageRate ? prev.mortgageRate : inputs.mortgageRate,
+      numRooms: prev.numRooms === inputs.numRooms ? prev.numRooms : inputs.numRooms,
+      purchasePrice: prev.purchasePrice === inputs.purchasePrice ? prev.purchasePrice : inputs.purchasePrice,
+    }));
+  }, [inputs.rentPerRoom, inputs.vacancyPct, inputs.mortgageRate, inputs.numRooms, inputs.purchasePrice]);
+
+  const scenario = { ...inputs, ...overrides };
+  const base = calc(inputs);
+  const s = calc(scenario);
+  const changed = s.monthlyCF !== base.monthlyCF;
+
+  const sliders = [
+    { label: "Rent / Room", key: "rentPerRoom", min: 400, max: 1000, step: 25, fmt: (v) => fmt(v) },
+    { label: "Vacancy", key: "vacancyPct", min: 0, max: 50, step: 5, fmt: (v) => v + "%" },
+    { label: "Interest Rate", key: "mortgageRate", min: 2, max: 10, step: 0.25, fmt: (v) => v.toFixed(2) + "%" },
+    { label: "# Rooms", key: "numRooms", min: 4, max: 12, step: 1, fmt: (v) => v },
+    { label: "Purchase Price", key: "purchasePrice", min: 300000, max: 500000, step: 5000, fmt: (v) => fmt(v) },
+  ];
+
   return (
-    <div style={{ overflowX: "auto" }}>
-      <table className="sens-table">
-        <thead>
-          <tr>
-            <th>{label}</th>
-            <th>Monthly CF</th>
-            <th>Annual CF</th>
-            <th>CoC Return</th>
-          </tr>
-        </thead>
-        <tbody>
-          {values.map((val) => {
-            const modified = { ...inputs, [field]: val };
-            const r = calc(modified);
-            const isActive = val === inputs[field];
-            return (
-              <tr key={val} className={isActive ? "active-row" : ""}>
-                <td style={{ color: isActive ? undefined : "var(--text-secondary)" }}>{field === "vacancyPct" ? val + "%" : fmt(val)}</td>
-                <td style={{ color: isActive ? undefined : r.monthlyCF >= 0 ? "var(--green)" : "var(--red)" }}>
-                  {fmt(r.monthlyCF)}
-                </td>
-                <td style={{ color: isActive ? undefined : r.annualCF >= 0 ? "var(--green)" : "var(--red)" }}>
-                  {fmt(r.annualCF)}
-                </td>
-                <td style={{ color: isActive ? undefined : "var(--text-secondary)" }}>
-                  {pct(r.coc)}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+    <div>
+      {sliders.map(({ label, key, min, max, step, fmt: fmtVal }) => (
+        <div key={key} className="slider-row">
+          <div className="slider-label">
+            <span>{label}</span>
+            <span className="slider-value">{fmtVal(overrides[key])}</span>
+          </div>
+          <input
+            type="range"
+            min={min}
+            max={max}
+            step={step}
+            value={overrides[key]}
+            onChange={(e) => setOverrides({ ...overrides, [key]: parseFloat(e.target.value) })}
+            className="slider-input"
+          />
+        </div>
+      ))}
+      <div className="scenario-results">
+        <div className="scenario-grid">
+          <div className="scenario-card">
+            <div className="scenario-card-label">Monthly CF</div>
+            <div className={"scenario-card-value " + (s.monthlyCF >= 0 ? "c-green" : "c-red")}>{fmt(s.monthlyCF)}</div>
+            {changed && <div className="scenario-card-delta">{s.monthlyCF >= base.monthlyCF ? "+" : ""}{fmt(s.monthlyCF - base.monthlyCF)} vs base</div>}
+          </div>
+          <div className="scenario-card">
+            <div className="scenario-card-label">Annual CF</div>
+            <div className={"scenario-card-value " + (s.annualCF >= 0 ? "c-green" : "c-red")}>{fmt(s.annualCF)}</div>
+            {changed && <div className="scenario-card-delta">{s.annualCF >= base.annualCF ? "+" : ""}{fmt(s.annualCF - base.annualCF)} vs base</div>}
+          </div>
+          <div className="scenario-card">
+            <div className="scenario-card-label">CoC Return</div>
+            <div className="scenario-card-value">{pct(s.coc)}</div>
+          </div>
+          <div className="scenario-card">
+            <div className="scenario-card-label">DSCR</div>
+            <div className="scenario-card-value">{s.dscr.toFixed(2)}x</div>
+          </div>
+          <div className="scenario-card">
+            <div className="scenario-card-label">Cap Rate</div>
+            <div className="scenario-card-value">{pct(s.capRate)}</div>
+          </div>
+          <div className="scenario-card">
+            <div className="scenario-card-label">Mortgage</div>
+            <div className="scenario-card-value">{fmt(s.monthlyMortgage)}/mo</div>
+          </div>
+        </div>
+        {changed && (
+          <button className="reset-btn" onClick={() => setOverrides({
+            rentPerRoom: inputs.rentPerRoom,
+            vacancyPct: inputs.vacancyPct,
+            mortgageRate: inputs.mortgageRate,
+            numRooms: inputs.numRooms,
+            purchasePrice: inputs.purchasePrice,
+          })}>Reset to base</button>
+        )}
+      </div>
     </div>
   );
 }
@@ -367,12 +423,8 @@ export default function Calculator() {
             <ResultRow label="Monthly CF per Door" value={fmt(r.cfPerDoor)} />
           </Section>
 
-          <Section title="Sensitivity – Rent Per Room">
-            <SensitivityTable inputs={inputs} field="rentPerRoom" values={[550, 600, 650, 700, 750, 800]} label="Rent / Room" />
-          </Section>
-
-          <Section title="Sensitivity – Vacancy Rate">
-            <SensitivityTable inputs={inputs} field="vacancyPct" values={[0, 5, 10, 15, 20, 25]} label="Vacancy %" />
+          <Section title="What-If Scenario">
+            <ScenarioAnalysis inputs={inputs} />
           </Section>
         </div>
       </div>
