@@ -144,3 +144,23 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; marg
 }
 .reset-btn:hover { opacity: 0.85; }
 @media (max-width: 500px) { .scenario-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.util-chart {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  padding: 10px 14px 8px; gap: 2px;
+}
+.util-bar-col {
+  display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 0;
+}
+.util-bar-val {
+  font-size: 9px; font-family: 'SF Mono','Menlo','Consolas', monospace;
+  color: var(--text-muted); margin-bottom: 3px; white-space: nowrap;
+}
+.util-bar {
+  width: 100%; max-width: 28px; min-height: 2px; border-radius: 2px 2px 0 0;
+  background: linear-gradient(180deg, var(--red) 0%, var(--accent) 100%);
+}
+.util-bar-label {
+  font-size: 9px; color: var(--text-muted); margin-top: 3px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.3px;
+}

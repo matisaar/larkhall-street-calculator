@@ -17,7 +17,8 @@ const defaultInputs = {
   vacancyPct: 5,
   propertyTaxAnnual: 2530,
   insurance: 175,
-  utilities: 800,
+  utilitiesWinter: 1500,
+  utilitiesSummer: 500,
   maintenance: 150,
   pmPct: 10,
 };
@@ -43,6 +44,14 @@ function pmt(rate, nper, pv) {
   return (pv * rate * Math.pow(1 + rate, nper)) / (Math.pow(1 + rate, nper) - 1);
 }
 
+const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function monthlyUtilities(winter, summer) {
+  const avg = (winter + summer) / 2;
+  const amp = (winter - summer) / 2;
+  return Array.from({ length: 12 }, (_, m) => Math.round(avg + amp * Math.cos((2 * Math.PI * m) / 12)));
+}
+
 function calc(i) {
   const downPayment = i.purchasePrice * (i.downPaymentPct / 100);
   const mortgage = i.purchasePrice - downPayment;
@@ -60,12 +69,14 @@ function calc(i) {
   const egi = grossRent * (1 - i.vacancyPct / 100);
   const propTaxMo = i.propertyTaxAnnual / 12;
   const pmFee = grossRent * (i.pmPct / 100);
+  const utilByMonth = monthlyUtilities(i.utilitiesWinter, i.utilitiesSummer);
+  const utilitiesAvg = utilByMonth.reduce((a, b) => a + b, 0) / 12;
   const totalExpenses =
-    monthlyMortgage + propTaxMo + i.insurance + i.utilities + i.maintenance + pmFee;
+    monthlyMortgage + propTaxMo + i.insurance + utilitiesAvg + i.maintenance + pmFee;
   const monthlyCF = egi - totalExpenses;
   const annualCF = monthlyCF * 12;
   const noi =
-    (egi - propTaxMo - i.insurance - i.utilities - i.maintenance - pmFee) * 12;
+    (egi - propTaxMo - i.insurance - utilitiesAvg - i.maintenance - pmFee) * 12;
   const capRate = noi / (i.purchasePrice + totalReno);
   const coc = annualCF / totalCashIn;
   const dscr = monthlyMortgage > 0 ? noi / 12 / monthlyMortgage : 0;
@@ -77,7 +88,7 @@ function calc(i) {
     downPayment, mortgage, closingCosts, totalReno, contingency,
     totalCashIn, parentLoan, monthlyMortgage, grossRent, egi, propTaxMo, pmFee,
     totalExpenses, monthlyCF, annualCF, noi, capRate, coc, dscr,
-    breakeven, cfPerDoor, grm,
+    breakeven, cfPerDoor, grm, utilByMonth, utilitiesAvg,
   };
 }
 
@@ -128,6 +139,21 @@ function Section({ title, children, defaultOpen = true }) {
         <span className="section-toggle">{open ? "\u2212" : "+"}</span>
       </div>
       {open && <div className="section-body">{children}</div>}
+    </div>
+  );
+}
+
+function UtilityChart({ months }) {
+  const max = Math.max(...months);
+  return (
+    <div className="util-chart">
+      {months.map((v, i) => (
+        <div key={i} className="util-bar-col">
+          <span className="util-bar-val">{fmt(v)}</span>
+          <div className="util-bar" style={{ height: max > 0 ? (v / max * 48) + "px" : "2px" }} />
+          <span className="util-bar-label">{MONTH_NAMES[i]}</span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -389,7 +415,10 @@ export default function Calculator() {
             <ResultRow label="Mortgage (P&I)" value={fmt(r.monthlyMortgage)} />
             <InputRow label="Property Tax (annual)" field="propertyTaxAnnual" inputs={inputs} onChange={onChange} step={100} note="$2,530/yr per REALTOR.ca listing" />
             <InputRow label="Insurance" field="insurance" inputs={inputs} onChange={onChange} step={10} />
-            <InputRow label="Utilities (heat/electric) – included in rent" field="utilities" inputs={inputs} onChange={onChange} step={25} note="Electric baseboard + oil heat; 3390 sqft" />
+            <InputRow label="Utilities – Winter peak (Jan)" field="utilitiesWinter" inputs={inputs} onChange={onChange} step={50} note="Electric baseboard + oil heat; 3390 sqft" />
+            <InputRow label="Utilities – Summer low (Jul)" field="utilitiesSummer" inputs={inputs} onChange={onChange} step={50} note="Lights, hot water, minimal heat" />
+            <ResultRow label="Utilities (12-mo avg)" value={fmt(r.utilitiesAvg)} note="Seasonal cosine curve Jan→Dec" />
+            <UtilityChart months={r.utilByMonth} />
             <InputRow label="Maintenance & CapEx Reserve" field="maintenance" inputs={inputs} onChange={onChange} step={25} note="1968 build – budget conservatively" />
             <InputRow label="Property Management (10% of gross per room)" field="pmPct" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={1} note="Your existing PM arrangement" />
             <ResultRow label="Total Monthly Expenses" value={fmt(r.totalExpenses)} />
