@@ -24,7 +24,7 @@ const defaultInputs = {
 };
 
 function fmt(n) {
-  if (n === undefined || n === null || isNaN(n)) return "$0";
+  if (n === undefined || n === null || !isFinite(n)) return "$0";
   return (
     (n < 0 ? "\u2212" : "") +
     "$" +
@@ -35,7 +35,7 @@ function fmt(n) {
 }
 
 function pct(n) {
-  if (n === undefined || n === null || isNaN(n)) return "0.0%";
+  if (n === undefined || n === null || !isFinite(n)) return "0.0%";
   return (n * 100).toFixed(1) + "%";
 }
 
@@ -69,10 +69,10 @@ function calc(i) {
     (egi - propTaxMo - i.insurance - i.utilities - i.maintenance - pmFee) * 12;
   const capRate = noi / (i.purchasePrice + totalReno);
   const coc = annualCF / totalCashIn;
-  const dscr = noi / 12 / monthlyMortgage;
-  const breakeven = totalExpenses / grossRent;
-  const cfPerDoor = monthlyCF / i.numRooms;
-  const grm = (i.purchasePrice + totalReno) / (grossRent * 12);
+  const dscr = monthlyMortgage > 0 ? noi / 12 / monthlyMortgage : 0;
+  const breakeven = grossRent > 0 ? totalExpenses / grossRent : 0;
+  const cfPerDoor = i.numRooms > 0 ? monthlyCF / i.numRooms : 0;
+  const grm = grossRent > 0 ? (i.purchasePrice + totalReno) / (grossRent * 12) : 0;
 
   return {
     downPayment, mortgage, closingCosts, totalReno, contingency,
@@ -116,16 +116,6 @@ function ResultRow({ label, value, highlight, note }) {
         {note && <div className="result-note">{note}</div>}
       </div>
       <span className={`result-value ${colorClass}`}>{value}</span>
-    </div>
-  );
-}
-
-function MetricCard({ label, value, color, sub }) {
-  return (
-    <div className="metric-card">
-      <div className="metric-label">{label}</div>
-      <div className="metric-value" style={{ color }}>{value}</div>
-      {sub && <div className="metric-sub">{sub}</div>}
     </div>
   );
 }
@@ -212,7 +202,7 @@ function ScenarioAnalysis({ inputs }) {
           </div>
           <div className="scenario-card">
             <div className="scenario-card-label">DSCR</div>
-            <div className="scenario-card-value">{s.dscr.toFixed(2)}x</div>
+            <div className="scenario-card-value">{isFinite(s.dscr) ? s.dscr.toFixed(2) + "x" : "N/A"}</div>
           </div>
           <div className="scenario-card">
             <div className="scenario-card-label">Cap Rate</div>
@@ -417,7 +407,7 @@ export default function Calculator() {
           <Section title="Key Metrics">
             <ResultRow label="Cap Rate" value={pct(r.capRate)} note="NOI / Total Cost (purchase + reno)" />
             <ResultRow label="Cash-on-Cash Return" value={pct(r.coc)} note="Annual CF / Total Cash In" />
-            <ResultRow label="DSCR (Debt Service Coverage)" value={r.dscr.toFixed(2) + "x"} note="NOI / Debt Service; >1.2x = healthy" />
+            <ResultRow label="DSCR (Debt Service Coverage)" value={isFinite(r.dscr) ? r.dscr.toFixed(2) + "x" : "N/A"} note="NOI / Debt Service; >1.2x = healthy" />
             <ResultRow label="Gross Rent Multiplier" value={r.grm.toFixed(1) + "x"} />
             <ResultRow label="Break-even Occupancy" value={pct(r.breakeven)} note="Expenses / Gross Rent" />
             <ResultRow label="Monthly CF per Door" value={fmt(r.cfPerDoor)} />
