@@ -260,7 +260,7 @@ function InvestmentPrioritizer({ monthlyCF }) {
                 <div className="inv-wf-body">
                   <div className="inv-wf-name">{w.name}</div>
                   <div className="inv-wf-detail">
-                    {fmt(w.cost)} \u00b7 {isFinite(w.monthsToPayoff) ? w.monthsToPayoff + " mo" : "\u221e"} to fund \u00b7 Pool: {fmt(w.poolBefore)}/mo \u2192 {fmt(w.poolBefore + w.savingsPerMo)}/mo
+                    {fmt(w.cost)} {"\u00b7"} {isFinite(w.monthsToPayoff) ? w.monthsToPayoff + " mo" : "\u221e"} to fund {"\u00b7"} Pool: {fmt(w.poolBefore)}/mo {"\u2192"} {fmt(w.poolBefore + w.savingsPerMo)}/mo
                   </div>
                   <div className="inv-wf-bar-track">
                     <div className="inv-wf-bar-fill" style={{ width: Math.min(100, w.roi * 100 / 2) + "%" }} />
@@ -271,7 +271,7 @@ function InvestmentPrioritizer({ monthlyCF }) {
             ))}
           </div>
           <div className="inv-wf-summary">
-            All upgrades funded by <strong>month {waterfall[waterfall.length - 1]?.cumulMonth || 0}</strong> \u00b7
+            All upgrades funded by <strong>month {waterfall[waterfall.length - 1]?.cumulMonth || 0}</strong> {"\u00b7"}{" "}
             Final monthly pool: <strong>{fmt(waterfall.reduce((s, w) => s + w.savingsPerMo, Math.max(0, monthlyCF)))}/mo</strong>
           </div>
         </div>
