@@ -2,18 +2,17 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
 const defaultInputs = {
-  purchasePrice: 369900,
+  purchasePrice: 420000,
   downPaymentPct: 20,
   closingCostPct: 3,
   mortgageRate: 5,
   amortYears: 25,
-  egressWindows: 4000,
-  wallsDoors: 10000,
-  painting: 3000,
-  insulation: 1000,
-  thirdBathroom: 5000,
-  basementKitchen: 3000,
-  contingencyPct: 10,
+  newBrUpstairs: 3000,
+  newBrMiddle: 3000,
+  paintingNewRooms: 500,
+  futureBsmtBr: 5000,
+  contingencyPct: 0,
+  yourCash: 70000,
   numRooms: 8,
   rentPerRoom: 650,
   vacancyPct: 5,
@@ -50,10 +49,11 @@ function calc(i) {
   const mortgage = i.purchasePrice - downPayment;
   const closingCosts = i.purchasePrice * (i.closingCostPct / 100);
   const renoSubtotal =
-    i.egressWindows + i.wallsDoors + i.painting + i.insulation + i.thirdBathroom + i.basementKitchen;
+    i.newBrUpstairs + i.newBrMiddle + i.paintingNewRooms + i.futureBsmtBr;
   const contingency = renoSubtotal * (i.contingencyPct / 100);
   const totalReno = renoSubtotal + contingency;
   const totalCashIn = downPayment + closingCosts + totalReno;
+  const parentLoan = Math.max(0, totalCashIn - i.yourCash);
   const monthlyRate = i.mortgageRate / 100 / 12;
   const nPayments = i.amortYears * 12;
   const monthlyMortgage = pmt(monthlyRate, nPayments, mortgage);
@@ -76,7 +76,7 @@ function calc(i) {
 
   return {
     downPayment, mortgage, closingCosts, totalReno, contingency,
-    totalCashIn, monthlyMortgage, grossRent, egi, propTaxMo, pmFee,
+    totalCashIn, parentLoan, monthlyMortgage, grossRent, egi, propTaxMo, pmFee,
     totalExpenses, monthlyCF, annualCF, noi, capRate, coc, dscr,
     breakeven, cfPerDoor, grm,
   };
@@ -143,27 +143,26 @@ function Section({ title, children, defaultOpen = true }) {
   );
 }
 
-function SensitivityTable({ inputs }) {
-  const rents = [550, 600, 650, 700, 750, 800];
+function SensitivityTable({ inputs, field, values, label }) {
   return (
     <div style={{ overflowX: "auto" }}>
       <table className="sens-table">
         <thead>
           <tr>
-            <th>Rent / Room</th>
+            <th>{label}</th>
             <th>Monthly CF</th>
             <th>Annual CF</th>
             <th>CoC Return</th>
           </tr>
         </thead>
         <tbody>
-          {rents.map((rent) => {
-            const modified = { ...inputs, rentPerRoom: rent };
+          {values.map((val) => {
+            const modified = { ...inputs, [field]: val };
             const r = calc(modified);
-            const isActive = rent === inputs.rentPerRoom;
+            const isActive = val === inputs[field];
             return (
-              <tr key={rent} className={isActive ? "active-row" : ""}>
-                <td style={{ color: isActive ? undefined : "var(--text-secondary)" }}>{fmt(rent)}</td>
+              <tr key={val} className={isActive ? "active-row" : ""}>
+                <td style={{ color: isActive ? undefined : "var(--text-secondary)" }}>{field === "vacancyPct" ? val + "%" : fmt(val)}</td>
                 <td style={{ color: isActive ? undefined : r.monthlyCF >= 0 ? "var(--green)" : "var(--red)" }}>
                   {fmt(r.monthlyCF)}
                 </td>
@@ -316,22 +315,22 @@ export default function Calculator() {
             <ResultRow label="Mortgage Amount" value={fmt(r.mortgage)} />
           </Section>
 
-          <Section title="Renovation Budget" defaultOpen={false}>
-            <InputRow label="Egress Windows (2)" field="egressWindows" inputs={inputs} onChange={onChange} step={500} note="Cut concrete + install for basement BRs" />
-            <InputRow label="Walls & Doors" field="wallsDoors" inputs={inputs} onChange={onChange} step={500} note="Partition walls to create 8 BRs, add doors" />
-            <InputRow label="Painting (all floors)" field="painting" inputs={inputs} onChange={onChange} step={250} note="3390 sqft — all BRs, baths, common areas" />
-            <InputRow label="Insulation" field="insulation" inputs={inputs} onChange={onChange} step={250} note="Basement wall insulation (1968 build)" />
-            <InputRow label="3rd Bathroom" field="thirdBathroom" inputs={inputs} onChange={onChange} step={500} note="Add bathroom in basement/lower level" />
-            <InputRow label="Basement Kitchen" field="basementKitchen" inputs={inputs} onChange={onChange} step={250} note="Fridge, table, chairs, microwave, hot plates" />
-            <InputRow label="Contingency" field="contingencyPct" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={5} note="Buffer for 1968 build surprises" />
+          <Section title="Renovation Budget">
+            <InputRow label="New BR upstairs (wall + door)" field="newBrUpstairs" inputs={inputs} onChange={onChange} step={500} note="Split room beside dining room — handyman job" />
+            <InputRow label="New BR middle floor (wall + door)" field="newBrMiddle" inputs={inputs} onChange={onChange} step={500} note="Bottom of stairs on lower level" />
+            <InputRow label="Painting (new rooms only)" field="paintingNewRooms" inputs={inputs} onChange={onChange} step={100} note="Handyman $20/hr, gets discounts on paint" />
+            <InputRow label="Future: Basement BR (egress + door)" field="futureBsmtBr" inputs={inputs} onChange={onChange} step={500} note="Cut concrete for window, own entrance — charge premium" />
+            <InputRow label="Contingency" field="contingencyPct" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={5} />
             <ResultRow label="Total Renovation" value={fmt(r.totalReno)} />
           </Section>
 
-          <Section title="Total Cash Required" defaultOpen={false}>
+          <Section title="Funding Breakdown">
             <ResultRow label="Down Payment" value={fmt(r.downPayment)} />
             <ResultRow label="Closing Costs" value={fmt(r.closingCosts)} />
             <ResultRow label="Renovation" value={fmt(r.totalReno)} />
-            <ResultRow label="Total Cash In" value={fmt(r.totalCashIn)} />
+            <ResultRow label="Total Cash Needed" value={fmt(r.totalCashIn)} />
+            <InputRow label="Your Cash (out of pocket)" field="yourCash" inputs={inputs} onChange={onChange} step={5000} />
+            <ResultRow label="Parent Loan Needed" value={fmt(r.parentLoan)} highlight />
           </Section>
 
           <Section title="Monthly Income">
@@ -368,8 +367,12 @@ export default function Calculator() {
             <ResultRow label="Monthly CF per Door" value={fmt(r.cfPerDoor)} />
           </Section>
 
-          <Section title="Sensitivity – What If Rent Per Room Changes?">
-            <SensitivityTable inputs={inputs} />
+          <Section title="Sensitivity – Rent Per Room">
+            <SensitivityTable inputs={inputs} field="rentPerRoom" values={[550, 600, 650, 700, 750, 800]} label="Rent / Room" />
+          </Section>
+
+          <Section title="Sensitivity – Vacancy Rate">
+            <SensitivityTable inputs={inputs} field="vacancyPct" values={[0, 5, 10, 15, 20, 25]} label="Vacancy %" />
           </Section>
         </div>
       </div>
