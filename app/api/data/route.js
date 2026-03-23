@@ -9,7 +9,7 @@ async function readData() {
   // If VERCEL_KV_URL is set, use Vercel KV
   if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
     const res = await fetch(
-      `${process.env.KV_REST_API_URL}/get/hamel-23-data`,
+      `${process.env.KV_REST_API_URL}/get/larkhall-100-data`,
       {
         headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` },
         cache: "no-store",
@@ -36,7 +36,7 @@ async function readData() {
 async function writeData(data) {
   if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
     const encoded = JSON.stringify(data).replace(/"/g, '\\"');
-    await fetch(`${process.env.KV_REST_API_URL}/set/hamel-23-data/${encodeURIComponent(JSON.stringify(data))}`, {
+    await fetch(`${process.env.KV_REST_API_URL}/set/larkhall-100-data/${encodeURIComponent(JSON.stringify(data))}`, {
       headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` },
       cache: "no-store",
     });

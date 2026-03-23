@@ -1,4 +1,4 @@
-# 23 Hamel St — Investment Calculator
+# 100 Larkhall St — Investment Calculator
 
 A shared real estate investment calculator. Anyone with the link can edit numbers and changes sync automatically every 3 seconds.
 

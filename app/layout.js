@@ -1,8 +1,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "23 Hamel St - Investment Calculator",
-  description: "Real estate investment analysis for 23 Hamel St, St. John's",
+  title: "100 Larkhall St - Investment Calculator",
+  description: "Real estate investment analysis for 100 Larkhall St, St. John's",
 };
 
 export default function RootLayout({ children }) {

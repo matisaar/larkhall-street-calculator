@@ -2,24 +2,25 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
 const defaultInputs = {
-  purchasePrice: 279000,
+  purchasePrice: 369900,
   downPaymentPct: 20,
   closingCostPct: 3,
   mortgageRate: 5,
   amortYears: 25,
-  egressWindows: 2000,
-  wallsDoors: 7500,
-  painting: 2000,
-  insulation: 500,
+  egressWindows: 4000,
+  wallsDoors: 10000,
+  painting: 3000,
+  insulation: 1000,
+  thirdBathroom: 5000,
   basementKitchen: 3000,
-  contingencyPct: 0,
-  numRooms: 6,
+  contingencyPct: 10,
+  numRooms: 8,
   rentPerRoom: 650,
   vacancyPct: 5,
-  propertyTaxAnnual: 2361,
-  insurance: 150,
-  utilities: 700,
-  maintenance: 100,
+  propertyTaxAnnual: 2530,
+  insurance: 175,
+  utilities: 800,
+  maintenance: 150,
   pmPct: 10,
 };
 
@@ -49,7 +50,7 @@ function calc(i) {
   const mortgage = i.purchasePrice - downPayment;
   const closingCosts = i.purchasePrice * (i.closingCostPct / 100);
   const renoSubtotal =
-    i.egressWindows + i.wallsDoors + i.painting + i.insulation + i.basementKitchen;
+    i.egressWindows + i.wallsDoors + i.painting + i.insulation + i.thirdBathroom + i.basementKitchen;
   const contingency = renoSubtotal * (i.contingencyPct / 100);
   const totalReno = renoSubtotal + contingency;
   const totalCashIn = downPayment + closingCosts + totalReno;
@@ -143,7 +144,7 @@ function Section({ title, children, defaultOpen = true }) {
 }
 
 function SensitivityTable({ inputs }) {
-  const rents = [500, 550, 600, 650, 700, 750];
+  const rents = [550, 600, 650, 700, 750, 800];
   return (
     <div style={{ overflowX: "auto" }}>
       <table className="sens-table">
@@ -290,8 +291,8 @@ export default function Calculator() {
   return (
     <div className="app-container">
       <div className="header">
-        <h1 className="header-title">23 Hamel St, St. John&apos;s, NL</h1>
-        <a className="header-link" href="https://www.redfin.ca/nl/st-john-s/23-Hamel-St-A1C-5A3/home/158595475" target="_blank" rel="noopener noreferrer">Redfin</a>
+        <h1 className="header-title">100 Larkhall St, St. John&apos;s, NL</h1>
+        <a className="header-link" href="https://www.realtor.ca/real-estate/29486289/100-larkhall-street-st-johns" target="_blank" rel="noopener noreferrer">REALTOR.ca</a>
         <div className="header-sync">
           <span className="sync-dot" style={{ background: syncColors[syncStatus] }} />
           <span>
@@ -316,12 +317,13 @@ export default function Calculator() {
           </Section>
 
           <Section title="Renovation Budget" defaultOpen={false}>
-            <InputRow label="Egress Window (1)" field="egressWindows" inputs={inputs} onChange={onChange} step={500} note="Cut concrete + install for 1 basement BR" />
-            <InputRow label="Walls & Doors" field="wallsDoors" inputs={inputs} onChange={onChange} step={500} note="Partition walls (up & down), add doors, fix doors" />
-            <InputRow label="Painting (all floors)" field="painting" inputs={inputs} onChange={onChange} step={250} note="BRs, bathroom, stairways, entire basement" />
-            <InputRow label="Insulation" field="insulation" inputs={inputs} onChange={onChange} step={250} note="Basement wall insulation" />
+            <InputRow label="Egress Windows (2)" field="egressWindows" inputs={inputs} onChange={onChange} step={500} note="Cut concrete + install for basement BRs" />
+            <InputRow label="Walls & Doors" field="wallsDoors" inputs={inputs} onChange={onChange} step={500} note="Partition walls to create 8 BRs, add doors" />
+            <InputRow label="Painting (all floors)" field="painting" inputs={inputs} onChange={onChange} step={250} note="3390 sqft — all BRs, baths, common areas" />
+            <InputRow label="Insulation" field="insulation" inputs={inputs} onChange={onChange} step={250} note="Basement wall insulation (1968 build)" />
+            <InputRow label="3rd Bathroom" field="thirdBathroom" inputs={inputs} onChange={onChange} step={500} note="Add bathroom in basement/lower level" />
             <InputRow label="Basement Kitchen" field="basementKitchen" inputs={inputs} onChange={onChange} step={250} note="Fridge, table, chairs, microwave, hot plates" />
-            <InputRow label="Contingency" field="contingencyPct" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={5} note="Contractor quoted ~$15K" />
+            <InputRow label="Contingency" field="contingencyPct" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={5} note="Buffer for 1968 build surprises" />
             <ResultRow label="Total Renovation" value={fmt(r.totalReno)} />
           </Section>
 
@@ -335,17 +337,17 @@ export default function Calculator() {
           <Section title="Monthly Income">
             <InputRow label="Number of Rooms" field="numRooms" inputs={inputs} onChange={onChange} prefix="" suffix="rooms" step={1} />
             <InputRow label="Rent per Room (utilities included)" field="rentPerRoom" inputs={inputs} onChange={onChange} step={25} />
-            <InputRow label="Vacancy Rate" field="vacancyPct" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={1} note="Near MUN – strong tenant demand" />
+            <InputRow label="Vacancy Rate" field="vacancyPct" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={1} note="Near MUN & Health Sciences – strong demand" />
             <ResultRow label="Gross Monthly Rent" value={fmt(r.grossRent)} />
             <ResultRow label="Effective Gross Income (EGI)" value={fmt(r.egi)} />
           </Section>
 
           <Section title="Monthly Operating Expenses">
             <ResultRow label="Mortgage (P&I)" value={fmt(r.monthlyMortgage)} />
-            <InputRow label="Property Tax (annual)" field="propertyTaxAnnual" inputs={inputs} onChange={onChange} step={100} note="About $247/mo – city tax + water" />
+            <InputRow label="Property Tax (annual)" field="propertyTaxAnnual" inputs={inputs} onChange={onChange} step={100} note="$2,530/yr per REALTOR.ca listing" />
             <InputRow label="Insurance" field="insurance" inputs={inputs} onChange={onChange} step={10} />
-            <InputRow label="Utilities (heat/electric) – included in rent" field="utilities" inputs={inputs} onChange={onChange} step={25} note="Baseboard electric; you absorb this" />
-            <InputRow label="Maintenance & CapEx Reserve" field="maintenance" inputs={inputs} onChange={onChange} step={25} note="1949 build – budget conservatively" />
+            <InputRow label="Utilities (heat/electric) – included in rent" field="utilities" inputs={inputs} onChange={onChange} step={25} note="Electric baseboard + oil heat; 3390 sqft" />
+            <InputRow label="Maintenance & CapEx Reserve" field="maintenance" inputs={inputs} onChange={onChange} step={25} note="1968 build – budget conservatively" />
             <InputRow label="Property Management (10% of gross per room)" field="pmPct" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={1} note="Your existing PM arrangement" />
             <ResultRow label="Total Monthly Expenses" value={fmt(r.totalExpenses)} />
           </Section>
