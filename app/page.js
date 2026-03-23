@@ -177,6 +177,143 @@ function UtilityChart({ months }) {
   );
 }
 
+const DEFAULT_UPGRADES = [
+  { id: 1, name: "Mini-splits (heat pumps)", cost: 15000, savingsPerMo: 400, type: "savings", note: "Replace electric baseboard; 40-60% heating reduction" },
+  { id: 2, name: "Insulation (attic + walls)", cost: 8000, savingsPerMo: 150, type: "savings", note: "1968 build \u2014 likely minimal insulation" },
+  { id: 3, name: "LED lighting throughout", cost: 500, savingsPerMo: 40, type: "savings", note: "Quick win, instant payback" },
+  { id: 4, name: "Tankless water heater", cost: 3500, savingsPerMo: 50, type: "savings", note: "On-demand hot water, no standby loss" },
+  { id: 5, name: "Add 9th bedroom (basement)", cost: 8000, savingsPerMo: 650, type: "income", note: "Egress window + framing \u2192 extra rent" },
+  { id: 6, name: "Washer/dryer (coin-op)", cost: 3000, savingsPerMo: 120, type: "income", note: "Tenant convenience, passive income" },
+];
+
+function InvestmentPrioritizer({ monthlyCF }) {
+  const [upgrades, setUpgrades] = useState(DEFAULT_UPGRADES);
+
+  const updateUpgrade = (id, field, value) => {
+    setUpgrades((prev) => prev.map((u) => u.id === id ? { ...u, [field]: value } : u));
+  };
+
+  const ranked = [...upgrades]
+    .filter((u) => u.cost > 0 && u.savingsPerMo > 0)
+    .sort((a, b) => (b.savingsPerMo * 12 / b.cost) - (a.savingsPerMo * 12 / a.cost));
+
+  // Reinvestment waterfall: start with monthly CF, pay off upgrades in ROI order,
+  // then add their savings to the monthly pool for the next one
+  const waterfall = [];
+  let pool = Math.max(0, monthlyCF); // monthly $ available to reinvest
+  let cumulMonth = 0;
+  let cumulProfit = 0;
+  for (const u of ranked) {
+    const monthsToPayoff = pool > 0 ? Math.ceil(u.cost / pool) : Infinity;
+    cumulMonth += monthsToPayoff;
+    const roi = u.savingsPerMo * 12 / u.cost;
+    waterfall.push({
+      ...u,
+      roi,
+      monthsToPayoff,
+      cumulMonth,
+      poolBefore: pool,
+    });
+    pool += u.savingsPerMo; // savings now flow into the pool
+  }
+
+  // 5-year cumulative profit projection
+  const horizon = 60; // months
+  const timeline = [];
+  let profit = 0;
+  let monthlyPool = Math.max(0, monthlyCF);
+  let paidOff = [];
+  let remaining = ranked.map((u) => ({ ...u, left: u.cost }));
+  for (let m = 1; m <= horizon; m++) {
+    let available = monthlyPool;
+    // Pay towards next unpaid upgrade
+    const next = remaining.find((u) => u.left > 0);
+    if (next) {
+      const payment = Math.min(available, next.left);
+      next.left -= payment;
+      available -= payment;
+      if (next.left <= 0) {
+        monthlyPool += next.savingsPerMo;
+        paidOff.push(next.name);
+      }
+    }
+    profit += monthlyPool - Math.max(0, monthlyCF) + Math.max(0, monthlyCF);
+    if (m % 12 === 0 || m === 1 || m === horizon) {
+      timeline.push({ month: m, profit, pool: monthlyPool, completed: paidOff.length });
+    }
+  }
+
+  return (
+    <div>
+      <div className="inv-cards">
+        {upgrades.map((u) => {
+          const roi = u.cost > 0 ? (u.savingsPerMo * 12 / u.cost * 100) : 0;
+          const payback = u.savingsPerMo > 0 ? (u.cost / u.savingsPerMo) : 0;
+          return (
+            <div key={u.id} className="inv-card">
+              <div className="inv-card-head">
+                <span className={"inv-type-badge " + (u.type === "income" ? "inv-type-income" : "inv-type-savings")}>
+                  {u.type === "income" ? "\u2191 Income" : "\u2193 Expense"}
+                </span>
+                <span className="inv-roi">{roi.toFixed(0)}% ROI</span>
+              </div>
+              <div className="inv-card-name">{u.name}</div>
+              <div className="inv-card-note">{u.note}</div>
+              <div className="inv-card-fields">
+                <label>
+                  <span>Cost</span>
+                  <div className="inv-input-wrap">
+                    <span className="input-affix">$</span>
+                    <input type="number" value={u.cost} step={500}
+                      onChange={(e) => updateUpgrade(u.id, "cost", parseFloat(e.target.value) || 0)} />
+                  </div>
+                </label>
+                <label>
+                  <span>{u.type === "income" ? "+Income" : "Savings"}/mo</span>
+                  <div className="inv-input-wrap">
+                    <span className="input-affix">$</span>
+                    <input type="number" value={u.savingsPerMo} step={25}
+                      onChange={(e) => updateUpgrade(u.id, "savingsPerMo", parseFloat(e.target.value) || 0)} />
+                  </div>
+                </label>
+              </div>
+              <div className="inv-card-payback">Payback: {payback > 0 ? payback.toFixed(1) + " mo" : "\u2014"}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      {ranked.length > 0 && (
+        <div className="inv-waterfall">
+          <div className="inv-wf-title">Reinvestment Waterfall</div>
+          <div className="inv-wf-sub">Use your {fmt(Math.max(0, monthlyCF))}/mo cash flow to fund upgrades in ROI order. Each completed upgrade adds its savings to the monthly pool.</div>
+          <div className="inv-wf-timeline">
+            {waterfall.map((w, i) => (
+              <div key={w.id} className="inv-wf-step">
+                <div className="inv-wf-rank">{i + 1}</div>
+                <div className="inv-wf-body">
+                  <div className="inv-wf-name">{w.name}</div>
+                  <div className="inv-wf-detail">
+                    {fmt(w.cost)} \u00b7 {isFinite(w.monthsToPayoff) ? w.monthsToPayoff + " mo" : "\u221e"} to fund \u00b7 Pool: {fmt(w.poolBefore)}/mo \u2192 {fmt(w.poolBefore + w.savingsPerMo)}/mo
+                  </div>
+                  <div className="inv-wf-bar-track">
+                    <div className="inv-wf-bar-fill" style={{ width: Math.min(100, w.roi * 100 / 2) + "%" }} />
+                  </div>
+                </div>
+                <div className="inv-wf-cumul">Mo {w.cumulMonth}</div>
+              </div>
+            ))}
+          </div>
+          <div className="inv-wf-summary">
+            All upgrades funded by <strong>month {waterfall[waterfall.length - 1]?.cumulMonth || 0}</strong> \u00b7
+            Final monthly pool: <strong>{fmt(waterfall.reduce((s, w) => s + w.savingsPerMo, Math.max(0, monthlyCF)))}/mo</strong>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ScenarioAnalysis({ inputs }) {
   const [overrides, setOverrides] = useState({
     rentPerRoom: inputs.rentPerRoom,
@@ -464,6 +601,10 @@ export default function Calculator() {
           </Section>
         </div>
       </div>
+
+      <Section title="Investment Prioritizer" defaultOpen={true}>
+        <InvestmentPrioritizer monthlyCF={r.monthlyCF} />
+      </Section>
     </div>
   );
 }
