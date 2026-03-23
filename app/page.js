@@ -18,7 +18,7 @@ const defaultInputs = {
   propertyTaxAnnual: 2530,
   insurance: 175,
   utilitiesWinter: 1500,
-  utilitiesSummer: 500,
+  utilitiesSummer: 1000,
   maintenance: 150,
   pmPct: 10,
 };
@@ -145,15 +145,34 @@ function Section({ title, children, defaultOpen = true }) {
 
 function UtilityChart({ months }) {
   const max = Math.max(...months);
+  const min = Math.min(...months);
+  const pts = months.map((v, i) => {
+    const x = (i / 11) * 100;
+    const y = max === min ? 50 : 100 - ((v - min) / (max - min)) * 80 - 10;
+    return `${x},${y}`;
+  }).join(" ");
   return (
-    <div className="util-chart">
-      {months.map((v, i) => (
-        <div key={i} className="util-bar-col">
-          <span className="util-bar-val">{fmt(v)}</span>
-          <div className="util-bar" style={{ height: max > 0 ? (v / max * 48) + "px" : "2px" }} />
-          <span className="util-bar-label">{MONTH_NAMES[i]}</span>
-        </div>
-      ))}
+    <div className="util-spark">
+      <div className="util-spark-labels">
+        {months.map((v, i) => (
+          <span key={i} className={"util-spark-mo" + (i === 0 || i === 6 ? " util-spark-mo-hl" : "")}>
+            {MONTH_NAMES[i]}
+          </span>
+        ))}
+      </div>
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="util-spark-svg">
+        <polyline points={pts} fill="none" stroke="var(--accent)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+        {months.map((v, i) => {
+          const x = (i / 11) * 100;
+          const y = max === min ? 50 : 100 - ((v - min) / (max - min)) * 80 - 10;
+          return <circle key={i} cx={x} cy={y} r="3" fill="var(--accent)" vectorEffect="non-scaling-stroke" />;
+        })}
+      </svg>
+      <div className="util-spark-vals">
+        {months.map((v, i) => (
+          <span key={i} className="util-spark-v">{fmt(v)}</span>
+        ))}
+      </div>
     </div>
   );
 }
