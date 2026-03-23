@@ -10,7 +10,6 @@ const defaultInputs = {
   newBrUpstairs: 3000,
   newBrMiddle: 3000,
   paintingNewRooms: 500,
-  futureBsmtBr: 5000,
   contingencyPct: 0,
   yourCash: 70000,
   numRooms: 8,
@@ -49,7 +48,7 @@ function calc(i) {
   const mortgage = i.purchasePrice - downPayment;
   const closingCosts = i.purchasePrice * (i.closingCostPct / 100);
   const renoSubtotal =
-    i.newBrUpstairs + i.newBrMiddle + i.paintingNewRooms + i.futureBsmtBr;
+    i.newBrUpstairs + i.newBrMiddle + i.paintingNewRooms;
   const contingency = renoSubtotal * (i.contingencyPct / 100);
   const totalReno = renoSubtotal + contingency;
   const totalCashIn = downPayment + closingCosts + totalReno;
@@ -365,7 +364,6 @@ export default function Calculator() {
             <InputRow label="New BR upstairs (wall + door)" field="newBrUpstairs" inputs={inputs} onChange={onChange} step={500} note="Split room beside dining room — handyman job" />
             <InputRow label="New BR middle floor (wall + door)" field="newBrMiddle" inputs={inputs} onChange={onChange} step={500} note="Bottom of stairs on lower level" />
             <InputRow label="Painting (new rooms only)" field="paintingNewRooms" inputs={inputs} onChange={onChange} step={100} note="Handyman $20/hr, gets discounts on paint" />
-            <InputRow label="Future: Basement BR (egress + door)" field="futureBsmtBr" inputs={inputs} onChange={onChange} step={500} note="Cut concrete for window, own entrance — charge premium" />
             <InputRow label="Contingency" field="contingencyPct" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={5} />
             <ResultRow label="Total Renovation" value={fmt(r.totalReno)} />
           </Section>
