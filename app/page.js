@@ -17,8 +17,8 @@ const defaultInputs = {
   vacancyPct: 5,
   propertyTaxAnnual: 2530,
   insurance: 175,
-  utilitiesWinter: 1500,
-  utilitiesSummer: 1000,
+  utilitiesWinter: 850,
+  utilitiesSummer: 150,
   maintenance: 150,
   pmPct: 10,
 };
@@ -144,10 +144,10 @@ function Section({ title, children, defaultOpen = true }) {
 }
 
 const DEFAULT_UPGRADES = [
-  { id: 1, name: "Mini-splits (heat pumps)", cost: 15000, savingsPerMo: 400, type: "savings", note: "Replace electric baseboard; 40-60% heating reduction" },
-  { id: 2, name: "Insulation (attic + walls)", cost: 8000, savingsPerMo: 150, type: "savings", note: "1968 build \u2014 likely minimal insulation" },
-  { id: 3, name: "LED lighting throughout", cost: 500, savingsPerMo: 40, type: "savings", note: "Quick win, instant payback" },
-  { id: 4, name: "Tankless water heater", cost: 3500, savingsPerMo: 50, type: "savings", note: "On-demand hot water, no standby loss" },
+  { id: 1, name: "Mini-splits (heat pumps)", cost: 15000, savingsPerMo: 200, type: "savings", note: "Replace oil furnace; COP 3.0 vs oil saves ~$2,400/yr" },
+  { id: 2, name: "Insulation (attic + walls)", cost: 8000, savingsPerMo: 100, type: "savings", note: "1968 build, minimal insulation; cuts heat loss ~25%" },
+  { id: 3, name: "LED lighting throughout", cost: 500, savingsPerMo: 25, type: "savings", note: "Quick win, instant payback" },
+  { id: 4, name: "Tankless water heater", cost: 3500, savingsPerMo: 50, type: "savings", note: "Replace oil-fired tank; on-demand, no standby loss" },
   { id: 5, name: "Add 9th bedroom (basement)", cost: 8000, savingsPerMo: 650, type: "income", note: "Egress window + framing \u2192 extra rent" },
   { id: 6, name: "Washer/dryer (coin-op)", cost: 3000, savingsPerMo: 120, type: "income", note: "Tenant convenience, passive income" },
 ];
@@ -537,8 +537,8 @@ export default function Calculator() {
             <ResultRow label="Mortgage (P&I)" value={fmt(r.monthlyMortgage)} />
             <InputRow label="Property Tax (annual)" field="propertyTaxAnnual" inputs={inputs} onChange={onChange} step={100} note="$2,530/yr per REALTOR.ca listing" />
             <InputRow label="Insurance" field="insurance" inputs={inputs} onChange={onChange} step={10} />
-            <InputRow label="Utilities – Winter peak (Jan)" field="utilitiesWinter" inputs={inputs} onChange={onChange} step={50} note="Electric baseboard + oil heat; 3390 sqft" />
-            <InputRow label="Utilities – Summer low (Jul)" field="utilitiesSummer" inputs={inputs} onChange={onChange} step={50} note="Lights, hot water, minimal heat" />
+            <InputRow label="Utilities – Winter peak (Jan)" field="utilitiesWinter" inputs={inputs} onChange={onChange} step={50} note="Oil $4,526/yr + NL Power $1,715/yr actual; renter-adjusted" />
+            <InputRow label="Utilities – Summer low (Jul)" field="utilitiesSummer" inputs={inputs} onChange={onChange} step={50} note="Minimal oil; NL Power base ~$120/mo (2 meters)" />
             <ResultRow label="Utilities (12-mo avg)" value={fmt(r.utilitiesAvg)} />
             <InputRow label="Maintenance & CapEx Reserve" field="maintenance" inputs={inputs} onChange={onChange} step={25} note="1968 build – budget conservatively" />
             <InputRow label="Property Management (10% of gross per room)" field="pmPct" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={1} note="Your existing PM arrangement" />
