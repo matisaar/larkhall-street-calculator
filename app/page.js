@@ -143,40 +143,6 @@ function Section({ title, children, defaultOpen = true }) {
   );
 }
 
-function UtilityChart({ months }) {
-  const max = Math.max(...months);
-  const min = Math.min(...months);
-  const pts = months.map((v, i) => {
-    const x = (i / 11) * 100;
-    const y = max === min ? 50 : 100 - ((v - min) / (max - min)) * 80 - 10;
-    return `${x},${y}`;
-  }).join(" ");
-  return (
-    <div className="util-spark">
-      <div className="util-spark-labels">
-        {months.map((v, i) => (
-          <span key={i} className={"util-spark-mo" + (i === 0 || i === 6 ? " util-spark-mo-hl" : "")}>
-            {MONTH_NAMES[i]}
-          </span>
-        ))}
-      </div>
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="util-spark-svg">
-        <polyline points={pts} fill="none" stroke="var(--accent)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
-        {months.map((v, i) => {
-          const x = (i / 11) * 100;
-          const y = max === min ? 50 : 100 - ((v - min) / (max - min)) * 80 - 10;
-          return <circle key={i} cx={x} cy={y} r="3" fill="var(--accent)" vectorEffect="non-scaling-stroke" />;
-        })}
-      </svg>
-      <div className="util-spark-vals">
-        {months.map((v, i) => (
-          <span key={i} className="util-spark-v">{fmt(v)}</span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 const DEFAULT_UPGRADES = [
   { id: 1, name: "Mini-splits (heat pumps)", cost: 15000, savingsPerMo: 400, type: "savings", note: "Replace electric baseboard; 40-60% heating reduction" },
   { id: 2, name: "Insulation (attic + walls)", cost: 8000, savingsPerMo: 150, type: "savings", note: "1968 build \u2014 likely minimal insulation" },
@@ -573,8 +539,7 @@ export default function Calculator() {
             <InputRow label="Insurance" field="insurance" inputs={inputs} onChange={onChange} step={10} />
             <InputRow label="Utilities – Winter peak (Jan)" field="utilitiesWinter" inputs={inputs} onChange={onChange} step={50} note="Electric baseboard + oil heat; 3390 sqft" />
             <InputRow label="Utilities – Summer low (Jul)" field="utilitiesSummer" inputs={inputs} onChange={onChange} step={50} note="Lights, hot water, minimal heat" />
-            <ResultRow label="Utilities (12-mo avg)" value={fmt(r.utilitiesAvg)} note="Seasonal cosine curve Jan→Dec" />
-            <UtilityChart months={r.utilByMonth} />
+            <ResultRow label="Utilities (12-mo avg)" value={fmt(r.utilitiesAvg)} />
             <InputRow label="Maintenance & CapEx Reserve" field="maintenance" inputs={inputs} onChange={onChange} step={25} note="1968 build – budget conservatively" />
             <InputRow label="Property Management (10% of gross per room)" field="pmPct" inputs={inputs} onChange={onChange} prefix="" suffix="%" step={1} note="Your existing PM arrangement" />
             <ResultRow label="Total Monthly Expenses" value={fmt(r.totalExpenses)} />
